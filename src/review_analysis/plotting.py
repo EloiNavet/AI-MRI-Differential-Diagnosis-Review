@@ -1217,6 +1217,10 @@ def create_sankey_diagram(
     )
 
     fig, ax = _create_figure("detailed")
+    # Taller canvas: the middle column stacks many small datasets whose labels
+    # would otherwise collide. Positions stay in axes fractions, so no flow,
+    # count or proportion is affected.
+    fig.set_size_inches(9.0, 7.6)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
@@ -1224,12 +1228,64 @@ def create_sankey_diagram(
     x_d, x_ds, x_a = 0.06, 0.46, 0.86
     w_node = 0.06
 
+    label_fontsize = VIS_CONFIG["small_text_size"] * 0.85
+
+    def _label_line_count(node: str) -> int:
+        return node.replace("/", "\n").count("\n") + 1
+
+    def _resolve_label_overlaps(
+        nodes: list[str], positions: dict[str, tuple[float, float]]
+    ) -> dict[str, float]:
+        """Return a collision-free label centre for each node.
+
+        Node rectangles are never moved: only the text is nudged vertically so
+        that small, adjacent datasets stay readable. Deterministic two-pass
+        sweep (top-down, then bottom-up) over the existing node order.
+        """
+        # 1.55 covers the glyph height plus the padding of the white label box
+        # and leaves a visible gap between two consecutive labels.
+        fig_height_in = fig.get_size_inches()[1]
+        line_height = 1.55 * label_fontsize / 72.0 / fig_height_in
+
+        # Breathing space kept between two consecutive labels.
+        min_gap = 0.4 * line_height
+
+        ordered = sorted(nodes, key=lambda n: -(sum(positions[n]) / 2.0))
+        centers = {n: sum(positions[n]) / 2.0 for n in ordered}
+        half_heights = {n: _label_line_count(n) * line_height / 2.0 for n in ordered}
+
+        def _required_gap(upper: str, lower: str) -> float:
+            return half_heights[upper] + half_heights[lower] + min_gap
+
+        # Symmetric relaxation: each colliding pair is pushed apart around its
+        # own midpoint, so no label drifts far from the box it names.
+        for _ in range(200):
+            moved = False
+            for upper, lower in zip(ordered, ordered[1:]):
+                deficit = _required_gap(upper, lower) - (
+                    centers[upper] - centers[lower]
+                )
+                if deficit <= 0:
+                    continue
+                centers[upper] += deficit / 2.0
+                centers[lower] -= deficit / 2.0
+                moved = True
+            for n in ordered:
+                centers[n] = min(
+                    max(centers[n], half_heights[n]), 1.0 - half_heights[n]
+                )
+            if not moved:
+                break
+
+        return centers
+
     def _draw_nodes(
         nodes: list[str],
         positions: dict[str, tuple[float, float]],
         x: float,
         color: str,
         label_position: str = "inside",  # "left", "inside", "right"
+        label_centers: dict[str, float] | None = None,
     ):
         for n in nodes:
             y0, y1 = positions[n]
@@ -1260,21 +1316,52 @@ def create_sankey_diagram(
                 ha = "center"
                 text_color = "black"
 
+            box_center = (y0 + y1) / 2
+            text_y = box_center if label_centers is None else label_centers[n]
+
+            # Leader line back to the box when the label had to be moved.
+            if abs(text_y - box_center) > 0.004:
+                ax.plot(
+                    [x + w_node / 2, x + w_node / 2],
+                    [box_center, text_y],
+                    color="0.55",
+                    linewidth=0.5,
+                    zorder=2,
+                )
+
             display_label = n.replace("/", "\n")
             ax.text(
                 text_x,
-                (y0 + y1) / 2,
+                text_y,
                 display_label,
                 ha=ha,
                 va="center",
-                fontsize=VIS_CONFIG["small_text_size"] * 0.85,
+                fontsize=label_fontsize,
                 color=text_color,
                 weight="normal",
                 rotation=0,
+                zorder=3,
+                bbox=(
+                    dict(
+                        boxstyle="round,pad=0.12",
+                        facecolor="white",
+                        edgecolor="none",
+                        alpha=0.75,
+                    )
+                    if label_position == "inside"
+                    else None
+                ),
             )
 
     _draw_nodes(diseases, disease_pos, x_d, col["disease"], label_position="left")
-    _draw_nodes(datasets, dataset_pos, x_ds, col["dataset"], label_position="inside")
+    _draw_nodes(
+        datasets,
+        dataset_pos,
+        x_ds,
+        col["dataset"],
+        label_position="inside",
+        label_centers=_resolve_label_overlaps(datasets, dataset_pos),
+    )
     _draw_nodes(architectures, arch_pos, x_a, col["arch"], label_position="right")
 
     ax.text(
@@ -1456,6 +1543,105 @@ def _filter_differential_network_comparisons(
     return filtered_comparisons
 
 
+def _relax_node_overlaps(
+    coords: np.ndarray,
+    aspect: float,
+    min_separation: float,
+    iterations: int = 400,
+) -> np.ndarray:
+    """Push nodes apart until none are closer than ``min_separation``.
+
+    Distances are measured in the rendered aspect ratio (``aspect`` = width /
+    height) so that the criterion matches what the reader sees. Purely
+    deterministic: a fixed node order and a fixed number of sweeps. Needed
+    because the spring layout is weight-aware, so the heaviest pairs end up
+    almost superimposed and their edge weight becomes unreadable.
+    """
+    axis_scale = np.array([aspect, 1.0])
+    scaled = coords * axis_scale
+
+    for _ in range(iterations):
+        moved = False
+        for i in range(len(scaled)):
+            for j in range(i + 1, len(scaled)):
+                delta = scaled[j] - scaled[i]
+                distance = float(np.hypot(*delta))
+                if distance >= min_separation:
+                    continue
+                if distance < 1e-9:
+                    # Perfectly superimposed: separate along a fixed direction.
+                    delta = np.array([1.0, 0.0])
+                    distance = 1.0
+                shift = delta / distance * (min_separation - distance) / 2.0
+                scaled[i] -= shift
+                scaled[j] += shift
+                moved = True
+        # Keep everything inside the drawing box while spreading.
+        np.clip(scaled, -axis_scale, axis_scale, out=scaled)
+        if not moved:
+            break
+
+    return scaled / axis_scale
+
+
+def _normalize_layout_extent(coords: np.ndarray) -> np.ndarray:
+    """Center coordinates and rescale each axis so they span exactly [-1, 1]."""
+    lower = coords.min(axis=0)
+    upper = coords.max(axis=0)
+    half_range = (upper - lower) / 2.0
+    half_range[half_range == 0] = 1.0
+    return (coords - (lower + upper) / 2.0) / half_range
+
+
+def _landscape_network_layout(
+    G, seed: int = 42, aspect: float = 2.0, min_separation: float = 0.66
+) -> dict:
+    """Deterministic node layout aligned with a landscape canvas.
+
+    Runs the same spring layout as before, then rotates the coordinates onto
+    their principal axes (SVD) so the graph's main direction is horizontal,
+    relaxes node overlaps, and normalizes each axis to [-1, 1]. This removes
+    the long diagonal and the large empty corners without hardcoding any
+    disease position: the result depends only on the graph topology.
+    """
+    import networkx as nx
+
+    # The spring layout seeds its initial positions per node index, so the
+    # result depends on insertion order. That order comes from a Counter built
+    # over dict keys and therefore varies between processes (string hash
+    # randomization). Rebuilding the graph in sorted order makes the rendering
+    # reproducible; nodes, edges and weights are untouched.
+    ordered_graph = nx.Graph()
+    ordered_graph.add_nodes_from(sorted(G.nodes()))
+    ordered_graph.add_edges_from(
+        (u, v, G[u][v]) for u, v in sorted(tuple(sorted(edge)) for edge in G.edges())
+    )
+
+    nodes = list(ordered_graph.nodes())
+    pos_raw = nx.spring_layout(
+        ordered_graph, k=1, iterations=8000, threshold=1e-10, seed=seed
+    )
+
+    coords = np.array([pos_raw[node] for node in nodes], dtype=float)
+    coords -= coords.mean(axis=0)
+
+    # Principal axes; the first row of Vt is the direction of largest spread.
+    _, _, vt = np.linalg.svd(coords, full_matrices=False)
+
+    # Fix the sign of each component so the rotation is reproducible across
+    # LAPACK builds (SVD leaves the sign of each singular vector free).
+    dominant = np.argmax(np.abs(vt), axis=1)
+    signs = np.sign(vt[np.arange(vt.shape[0]), dominant])
+    signs[signs == 0] = 1.0
+    vt = vt * signs[:, None]
+
+    rotated = _normalize_layout_extent(coords @ vt.T)
+    rotated = _relax_node_overlaps(rotated, aspect, min_separation)
+    rotated = _normalize_layout_extent(rotated)
+
+    return {node: (rotated[i, 0], rotated[i, 1]) for i, node in enumerate(nodes)}
+
+
 def create_differential_diagnosis_network(
     pairwise_comparisons: Counter,
     output_path: str,
@@ -1492,23 +1678,26 @@ def create_differential_diagnosis_network(
         return
 
     fig, ax = _create_figure("detailed")
-    fig.set_size_inches(10, 8)
+    fig.set_size_inches(10, 5)
 
-    pos = nx.spring_layout(G, k=1, iterations=8000, threshold=1e-10, seed=42)
+    pos = _landscape_network_layout(G)
 
-    edges = G.edges()
+    # Sorted iteration so that the drawing order - and therefore how the
+    # translucent edges blend - does not depend on the process hash seed.
+    edges = sorted(tuple(sorted(edge)) for edge in G.edges())
     weights = [G[u][v]["weight"] for u, v in edges]
+    min_weight = min(weights) if weights else 1
     max_weight = max(weights) if weights else 1
+    weight_spread = (max_weight - min_weight) or 1
 
-    edge_colors = sns.color_palette("Blues", 3)
+    # Edge width/shade vary continuously with the weight so that close values
+    # stay distinguishable; the weights themselves are unchanged.
+    blues = plt.get_cmap("Blues")
     for (u, v), weight in zip(edges, weights):
-        norm_weight = weight / max_weight
-        if norm_weight >= 0.66:
-            edge_color, edge_width, edge_alpha = edge_colors[2], 2.5, 0.75
-        elif norm_weight >= 0.33:
-            edge_color, edge_width, edge_alpha = edge_colors[1], 1.8, 0.6
-        else:
-            edge_color, edge_width, edge_alpha = edge_colors[0], 1.0, 0.4
+        norm_weight = (weight - min_weight) / weight_spread
+        edge_width = 1.2 + 4.8 * norm_weight
+        edge_alpha = 0.55 + 0.35 * norm_weight
+        edge_color = blues(0.35 + 0.55 * norm_weight)
 
         nx.draw_networkx_edges(
             G,
@@ -1516,34 +1705,32 @@ def create_differential_diagnosis_network(
             edgelist=[(u, v)],
             width=edge_width,
             alpha=edge_alpha,
-            edge_color=edge_color,
+            edge_color=[edge_color],
         )
 
     node_color = VIS_CONFIG.get("fixed_bar_color", "#4C78A8")
-    node_sizes = []
-    for node in G.nodes():
-        degree = G.degree(node)
-        size = 800 + (degree / max(G.degree(nbr) for nbr in G.nodes())) * 800
-        node_sizes.append(size)
 
+    # Uniform node size: node area carries no meaning, so it must not encode a
+    # variable that the caption does not explain.
     nx.draw_networkx_nodes(
         G,
         pos,
+        nodelist=sorted(G.nodes()),
         node_color=node_color,
-        node_size=node_sizes,
+        node_size=1500,
         alpha=0.85,
         linewidths=1.2,
         edgecolors="#2F4F4F",
     )
 
     # Draw labels - clean, centered, readable
-    labels = {node: node for node in G.nodes()}
+    labels = {node: node for node in sorted(G.nodes())}
     nx.draw_networkx_labels(
         G,
         pos,
         labels=labels,
-        font_size=VIS_CONFIG["tick_size"] * 1.35,
-        font_weight="normal",
+        font_size=VIS_CONFIG["tick_size"] * 1.6,
+        font_weight="semibold",
         font_color="white",
     )
 
@@ -1557,9 +1744,21 @@ def create_differential_diagnosis_network(
             G,
             pos,
             edge_labels,
-            font_size=VIS_CONFIG["small_text_size"] * 1.1,
-            font_color="#4C4C4C",
+            font_size=VIS_CONFIG["small_text_size"] * 1.5,
+            font_color="#333333",
+            rotate=False,
+            label_pos=0.5,
+            bbox=dict(
+                boxstyle="round,pad=0.18",
+                facecolor="white",
+                edgecolor="none",
+                alpha=0.85,
+            ),
         )
+
+    # Keep a small margin so node discs and weight boxes are never clipped.
+    ax.set_xlim(-1.25, 1.25)
+    ax.set_ylim(-1.25, 1.25)
 
     title_text = f"Disease comparison network (node freq >= {effective_min_node_frequency}, edge weight >= {effective_min_edge_weight})"
     if show_titles:
