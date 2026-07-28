@@ -1,0 +1,25 @@
+# Core requirements for data gathering and analysis
+pandas>=1.3.0
+numpy>=1.20.0,<2.0.0
+matplotlib>=3.5.0
+tqdm>=4.60.0
+pyyaml>=6.0
+scikit-learn>=1.0.0
+requests>=2.25.0
+seaborn>=0.12.0
+python-dotenv>=1.0.0
+rapidfuzz>=3.0.0
+matplotlib-set-diagrams>=0.2.2
+
+# For PubMed
+biopython>=1.79
+
+# For Google Scholar
+scholarly>=1.7.0
+fake-useragent>=1.1.1
+
+# For arXiv
+arxiv>=1.4.2
+
+# For Scopus
+pybliometrics>=3.5.0

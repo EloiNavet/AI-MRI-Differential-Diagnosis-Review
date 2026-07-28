@@ -1,0 +1,699 @@
+constants:
+  ftd_subtypes:
+    - BVFTD
+    - SVPPA
+    - NFVPPA
+    - LVPPA
+  ood_rigor_keywords:
+    "External cross-center":
+      - external
+      - cross-center
+      - cross centre
+      - another center
+      - another centre
+      - independent cohort
+      - train
+      - test
+    "Temporal":
+      - temporal
+      - longitudinal
+      - prospective
+      - retrospective
+      - time
+    "Internal split":
+      - cross-validation
+      - k-fold
+      - loocv
+      - holdout
+      - internal split
+
+modalities:
+  T1w:
+    - T1w
+    - MPRAGE
+    - T1-weighted MRI
+  T2w:
+    - T2w
+    - T2 MRI
+    - T2-weighted MRI
+  FLAIR:
+    - FLAIR
+  DTI/DWI:
+    - DTI
+    - DWI
+    - MD
+    - FW
+    - Diffusion-weighted MRI
+    - Diffusion Spectrum Imaging (DSI)
+    - 3-T diffusion MRI
+    - multi-shell diffusion MRI (NODDI)
+    - DSI (GFA)
+    - Structural Connectivity (SC)
+  fMRI/rs-fMRI:
+    - fMRI
+    - rs-fMRI
+  SWI:
+    - SWI
+  PET/SPECT:
+    - PET
+    - FDG
+    - FDG-PET
+    - 18F-FDG PET
+    - PIB-PET
+    - 18F-florbetaben PET
+    - 18F-flutemetamol PET
+    - Amyloid-PET
+    - Amyloid
+    - PET biomarkers
+    - Tau-PET
+    - Tau
+    - SPECT
+    - DaTscan
+    - IMP-SPECT
+    - TRODAT
+  CT:
+    - CT
+  CSF Biomarkers:
+    - CSF
+    - CSF biomarkers
+  Clinical/Cognitive Data:
+    - Clinical
+    - Demographics
+    - CDR
+    - Neuropsychological tests
+    - Neuropsychological testing
+    - California Verbal Learning Test
+    - Modified Trail Making Test
+    - Digit span
+    - Verbal fluency
+    - Boston Naming Test
+    - Peabody Picture Vocabulary Test
+    - MMSE
+    - Medication Use
+    - Cognitive tests
+    - Neuropsychological data
+    - Demographic data
+    - Medical History
+    - Neuropsychological Assessments
+    - neuropsychological assessment
+    - Functional Evaluations
+    - Linguistic variables (BNT, Auditory word recognition, Repetition)
+    - BNT
+    - CVLT
+    - MTMT
+    - PPVT
+  Genetic Data:
+    - Genetic
+    - Genetics
+  Morphometric Data:
+    - Volumetric data
+    - brain structure volumes
+    - Cortical thickness
+    - Deformation-based morphometry
+    - DBM
+    - GM fraction
+    - cortical volume
+    - subcortical volume
+    - Gray matter (GM) density maps
+  Other/Physiological:
+    - EEG
+    - Neuropathology (TDP-43)
+    - Neuropathological assessment
+    - Neuropathological data
+    - Proteomic data
+    - Pathology
+  R2*:
+    - R2*
+    - R2* maps
+  ASL:
+    - ASL
+diagnosis:
+  CN:
+    - CN
+    - NC
+  SCD:
+    - SCD
+    - SMC
+  MCI:
+    - MCI
+    - lMCI
+    - eMCI
+    - pMCI
+    - sMCI
+    - PD-MCI
+    - aMCI
+  AD:
+    - AD
+    - dAD
+    - bvAD
+    - aAD
+    - AD Phenotype 1
+    - AD Phenotype 2
+    - AD Phenotype 3
+    - VMD
+    - very mild AD
+    - mild AD
+    - MoD
+    - moderate AD
+    - Tauopathy
+  FTD:
+    - FTD
+    - PPD
+    - PPD-BVFTD+
+    - PPD-BVFTD-
+    - FTLD
+    - FTLD-TDP
+    - FTLD-tau
+    # bvFTD:
+    - BV
+    - sbvFTD
+    - bvFTD
+    # PPA:
+    - PPA
+    - PNFA
+    - nfPPA
+    - agPPA
+    - LPA
+    - SD
+    - SV
+    - nfvPPA
+    - svPPA
+    - svPPA
+    - lvPPA
+    - PPA-nos
+    - PPAOS
+    - Pick's
+    - PiD
+  PD:
+    - PD
+    - IPD
+    - PD-CN
+    - PD-NC
+    - PIGD
+    - SWEDD
+    - TD
+    - PS
+    - ROD
+    - PDD
+    - Parkin.
+    - Prodromal
+  MSA:
+    - MSA
+    - MSA-P
+    - MSA-C
+  PSP:
+    - PSP
+    - PSP-RS
+    - vPSP
+    - Subcortical PSP
+    - Cortical PSP
+    - PSP-C
+    - PSP-SC
+  CBS:
+    - CBS
+    - CBD
+  DLB:
+    - DLB
+    - LBD
+  MS:
+    - MS
+  VD:
+    - VD
+    - VaD
+    - Vasc. dem
+  VBI:
+    - VBI
+  MXD:
+    - MXD
+    - AGD
+    - GGT
+    - Neurodeg. Dis.
+  NPH:
+    - NPH
+    - iNPH
+  SZ:
+    - SZ
+    - Schizophrenia
+  PSY:
+    - MD
+    - PSY
+    - DEP
+  CHR:
+    - CHR
+  ASD:
+    - ASD
+  TBI:
+    - TBI
+  PRD:
+    - PRD
+  SEF:
+    - SEF
+  ODE:
+    - ODE
+    - Epilepsy
+  DE:
+    - DE
+architectures:
+  SVM:
+    - SVM
+    - SVR
+    - Relevance Vector Machine
+    - RVM
+  Feature/Statistical Methods:
+    - PCA
+    - ICA
+    - SVD
+    - t-SNE
+    - UMAP
+    - ISOMAP
+    - Manifold learning
+    - ReliefF
+    - mRMR
+    - SHAP
+    - VBM
+    - VBM8
+    - TBM
+    - Volumetry
+    - DARTEL
+    - 3D-SSP
+    - WMH
+    - Linear Regression
+    - Regression Classifier
+    - Feature Selection
+    - Kernel
+    - Z-score
+    - ROI analysis
+    - ROI
+    - BNTF
+    - Grading
+    - Spectral Decomposition
+    - Markov
+    - Bayes Net
+    - Bayesian optimization
+    - Bayesian Network
+    - DSI
+    - GA
+    - Genetic Algorithm
+    - GP
+    - Gaussian Process
+    - Partial Least Squares
+    - PLS
+    - Monte Carlo simulation
+    - MCMC
+    - EM
+    - KDE (mixture modeling)
+    - KDE
+    - Nomogram
+    - Integrated Gradients
+    - FDR
+    - SMOTE
+    - AAL
+    - NEUROSTAT
+    - FreeSurfer
+    - Tensor-based Morphometry
+    - Voxel-based Morphometry
+    - HV
+    - Laplacian eigenmaps
+    - Laplace Beltrami operator
+    - Graph Theory (AAL atlas)
+    - Graph Theory
+    - Dual regression
+    - VOL
+    - Multi-atlas segmentation
+    - multi-atlas fusion (segmentation)
+    - LDDMM (Large Deformation Diffeomorphic Metric Mapping)
+    - LDDMM
+    - TBSS
+    - Pattern Regression
+    - MKL
+    - GIF (geodesic information flow)
+    - GIF tool (parcellation)
+    - Guided Backpropagation
+    - Grad-CAM
+    - Linear Mixed Effects Model
+    - StateViewer
+  MLP/NN:
+    - MLP
+    - Multilayer Perceptrons
+    - ANN
+    - DNN
+    - Deep Neural Network
+    - Deep neural networks
+    - Neural Network
+    - NN
+    - Fully Connected Network
+    - Ladder Network
+    - Single-layer perceptron
+    - PNN
+    - MMDNN
+  Random Forest:
+    - RF
+    - Random Forest
+    - RFC
+  Logistic Regression:
+    - LR
+    - Logistic Regression
+  CNN:
+    - CNN
+    - ConvNeXt
+    - ResNet
+    - ResNet152V2
+    - 3D-ResNet50
+    - VGG16
+    - InceptionV3
+    - MobileNet
+    - DenseNet121
+    - DenseNet-121
+    - U-Net
+    - UNet
+    - nnU-Net
+    - VB-Net
+    - V-Net
+    - UNETR
+    - FGCNN
+    - ResNet18 (3D)
+    - 3D ResNet18
+    - ResNet29
+    - MobileNetV2
+    - VGG-16
+    - SFCN
+    - IncepRes
+  Transformer:
+    - Transformer
+    - Attention
+    - ViT
+    - RViT
+    - Hybrid-RViT
+    - 3D ViT
+    - ViT-Small
+    - 3D Vision Transformer
+  Linear Methods:
+    - Linear Discriminant Analysis
+    - LDA
+    - DFA
+    - Lasso
+    - ElasticNet
+    - Elastic Net
+  Tree-Based Methods:
+    - Decision Tree
+    - DT
+    - Logistic Model Tree
+    - LMT
+    - AB
+    - AdaBoost
+    - BDT
+    - ExtraTrees
+    - LightGBM
+    - Lifespan Tree
+    - XGBoost
+    - GradientBoost
+    - CART
+    - Decision Trees
+    - CatBoost
+    - EBM
+  Other Classical ML:
+    - KNN
+    - k-Nearest Neighbors
+    - Naive Bayes
+    - Naïve Bayes
+    - Gaussian NB
+    - GNB
+    - NB
+    - Clustering
+    - k-Means
+    - SOM
+  Advanced DL:
+    - GCN
+    - GNN
+    - GraphSAGE
+    - BrainNetCNN
+    - GAT
+    - GIN
+    - GatedGCN
+    - DiffPool
+    - SAGPool
+    - HGPSLPool
+    - MEWISPool
+    - LiNet
+    - PRGNN
+    - MG2G
+    - BrainGNN
+    - TAG
+    - Autoencoder
+    - Generative Adversarial
+    - GAN
+    - VAE
+    - AssemblyNet
+  Specialized Methods:
+    - Ensemble
+    - Soft-voting
+    - Hard-voting
+    - TVT
+    - SSRT
+    - MFA
+    - KARNet
+    - KAN
+    - GAM
+    - TabNet
+    - DCN
+    - DeepFM
+    - Deep Factorization Machines
+    - Barlow Twins
+    - Triplet Training
+    - ContrastPool
+    - ANFIS
+    - ProNTo
+    - Event-based model
+    - SuStaIn
+    - pySuStaIn
+    - Hopf bifurcation model
+    - ReLU
+    - Softmax
+    - Linear Layer
+    - AdaptiveAvgPool3d
+    - RegBN
+    - SGD
+    - TAT
+    - TAS
+    - Local Discriminator
+    - Global Discriminator
+    - Self-distillation
+    - Radiomics
+    - Adversarial Confound Regression
+    - NeuroMiner
+    - MUQUBIA
+    - DiaMond
+    - MMTFN
+    - Mul-T
+    - mdbrain
+    - mdbrain (version 3.3.0)
+    - P-MSA
+    - SP-MSA
+    - DPL-MSA
+    - NNCLR (Nearest-Neighbor Contrastive Learning)
+    - NNCLR
+    - SSL (NNCLR)
+    - multi-level parallel feature embedding
+    - Hopf bifurcation whole-brain model
+datasets:
+  neuro:
+    ADNI:
+      - ADNI
+      - ADNI1
+      - ADNI2
+      - ADNI3
+      - J-ADNI
+    AIBL:
+      - AIBL
+    OASIS:
+      - OASIS
+      - OASIS1
+      - OASIS3
+      - OASIS-3
+    PPMI:
+      - PPMI
+      - Parkinson's Progression Markers Initiative
+    PDBP:
+      - PDBP
+      - Parkinson's Disease Biomarker Program
+    NACC:
+      - NACC
+    MIRIAD:
+      - MIRIAD
+    ReDLat:
+      - ReDLat
+    DELCODE:
+      - DELCODE
+    FTLDNI/ALLFTD:
+      - FTLDNI
+      - NIFD
+      - FTLDNI (NIFD)
+      - NIFD (FTLDNI)
+      - ALLFTD
+      - NIFTD
+      - LEFFTDS
+      - ARTFL
+    Other FTD:
+      - FTLD Consortium
+      - DESCRIBE
+      - DESCRIBE-FTD
+      - 4RTNI
+      - 4RTNI1
+      - 4RTNI2
+      - FTLDc (German Frontotemporal Lobar Degeneration Consortium)
+      - FTLDc (German consortium for frontotemporal lobar degeneration)
+      - German consortium for frontotemporal lobar degeneration (FTLDc)
+      - FTLDc
+      - IFGC
+      - German Research Consortium of FTLD
+      - Cambridge Centre for Frontotemporal Dementia
+      - UBC-FTD
+      - UCL DRC FTD cohort
+    ADRC:
+      - ADRC
+    PredictND:
+      - PredictND
+    DLBS:
+      - DLBS
+    COBRE:
+      - COBRE
+    PRONIA:
+      - PRONIA
+      - PRONIA (Personalised Prognostic Tools for Early Psychosis Management)
+    OFSEP:
+      - OFSEP
+    In-house:
+      - In-house
+      - External (1003 sites)
+      - Merged Dataset
+      - ANMerge
+      - Amsterdam Dementia Cohort
+      - Università degli Studi di Perugia
+      - Newcastle University
+      - TaoWu
+      - Neurocon
+      - BrainGluSchi
+      - University of Eastern Finland
+      - Aarhus University
+      - DZNE
+      - UCL Queen Square discovery dataset
+      - VU Medical Center
+      - Rigshospitalet
+      - Mayo Clinic Rochester
+      - Mayo Clinic Study of Aging
+      - Cambridge Centre for Parkinson-plus
+      - Cambridge Biomedical Research Centre
+      - Parkinson Study Group (PSG) sites
+      - Genepark
+      - BBBIPPS
+      - Nucleipark
+      - UCL
+    UKBK:
+      - UK Biobank
+      - UKBioBank
+      - UKBiobank
+    ADHD:
+      - ADHD200
+    AOMIC:
+      - AOMIC
+    Calgary:
+      - Calgary
+    ISYB:
+      - ISYB
+    PIXAR:
+      - PIXAR
+    SALD:
+      - SALD
+      - SAL
+    ABIDE:
+      - ABIDE
+      - ABIDE I
+      - ABIDE II
+    CamCAN:
+      - CamCAN
+    C-MIND:
+      - C-MIND
+    ICBM:
+      - ICBM
+    IXI:
+      - IXI
+    NDAR:
+      - NDAR
+    SRPBS:
+      - SRPBS
+    Kaggle:
+      - Kaggle
+    DDRC:
+      - DDRC
+    DANCER:
+      - DANCER
+    LBDSU:
+      - LBDSU
+    FHS:
+      - FHS
+    PROSPECT:
+      - PROSPECT
+      - PROSPECT-UK
+      - DAV
+      - YP
+      - davunetide trial
+      - salsalate trial
+      - young plasma trial
+    SLIM:
+      - SLIM
+    FMSA:
+      - FMSA
+metrics:
+  Accuracy:
+    - ACCURACY
+    - CCR
+    - ACC
+  AUC:
+    - ROC-AUC
+    # - AUC
+  PR-AUC:
+    - PR-AUC
+  Sensitivity:
+    - SENSITIVITY
+    - RECALL
+    - SS
+  Specificity:
+    - SPECIFICITY
+    - SP
+  Precision:
+    - PRECISION
+    - PPV
+  F1-score:
+    - F1-SCORE
+    - F1
+  BACC:
+    - BACC
+  NPV:
+    - NPV
+    - N.P.V
+    - Negative Predictive Value
+    - Negative-predictive-value
+  MCC:
+    - MCC
+  MAE:
+    - MAE
+  MSE:
+    - MSE
+  R²:
+    - R2
+    - R²
+  DICE:
+    - DICE
+  KAPPA:
+    - KAPPA
+  BRIER:
+    - BRIER
+    - Brier
+  PCC:
+    - PCC
+  GoF:
+    - GoF
+  SSIM:
+    - SSIM
+  Cohen's d:
+    - Cohen's d
